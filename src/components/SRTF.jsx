@@ -45,7 +45,22 @@ function SRTF({ processes }) {
       }
     }
 
-    setSchedule(localSchedule);
+    // Merge consecutive time units for the same process
+    const mergedSchedule = [];
+    localSchedule.forEach((current, index) => {
+      if (index === 0) {
+        mergedSchedule.push(current);
+      } else {
+        const previous = mergedSchedule[mergedSchedule.length - 1];
+        if (previous.pid === current.pid && previous.endTime === current.startTime) {
+          previous.endTime = current.endTime;
+        } else {
+          mergedSchedule.push(current);
+        }
+      }
+    });
+
+    setSchedule(mergedSchedule);
 
     const waitingTimes = {};
     const turnaroundTimes = {};

@@ -40,6 +40,11 @@ function Scheduler() {
     setShowResult(true);
   };
 
+  const resetProcesses = () => {
+    setProcesses([]);
+    setShowResult(false);
+  };
+
   return (
     <div>
       <h1>Scheduler Simulator</h1>
@@ -60,6 +65,7 @@ function Scheduler() {
         )}
         <button onClick={addProcess}>Add Process</button>
         <button onClick={executeScheduler}>Execute</button>
+        <button onClick={resetProcesses}>Reset</button>
       </div>
       <div>
         <h2>Process Control Block</h2>

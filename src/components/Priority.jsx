@@ -88,60 +88,61 @@ function Priority({ processes }) {
   });
 
   // Generate timeline elements
-  const generateTimeline = () => {
-    const timeline = [];
-    let previousEndTime = 0;
-    schedule.forEach((s, index) => {
-      // Render idle time before the current process
-      if (s.startTime > previousEndTime) {
-        const idleDuration = s.startTime - previousEndTime;
+const generateTimeline = () => {
+  const timeline = [];
+  let previousEndTime = 0;
+  let currentProcess = null;
+  let currentStartTime = 0;
+  
+  schedule.forEach((s, index) => {
+    if (s.pid !== currentProcess || s.startTime > previousEndTime) {
+      if (currentProcess !== null) {
+        // Render the current process block
         timeline.push(
           <div
-            key={`idle-${index}`}
+            key={`${currentProcess}-${currentStartTime}`}
             style={{
-              width: `${(idleDuration / totalDuration) * 100}%`,
+              width: `${((previousEndTime - currentStartTime) / totalDuration) * 100}%`,
               height: '20px',
-              background: 'white',
+              background: processColors[currentProcess],
               border: '1px solid black',
+              textAlign: 'center',
+              position: 'relative',
             }}
-          />
+          >
+            {currentProcess}
+          </div>
         );
       }
-      // Render the current process
-      timeline.push(
-        <div
-          key={index}
-          style={{
-            width: `${((s.endTime - s.startTime) / totalDuration) * 100}%`,
-            height: '20px',
-            background: processColors[s.pid],
-            border: '1px solid black',
-            textAlign: 'center',
-            position: 'relative',
-          }}
-        >
-          {s.pid}
-        </div>
-      );
-      previousEndTime = s.endTime;
-    });
-    // Render idle time after the last process
-    if (totalDuration > previousEndTime) {
-      const idleDuration = totalDuration - previousEndTime;
-      timeline.push(
-        <div
-          key={`idle-last`}
-          style={{
-            width: `${(idleDuration / totalDuration) * 100}%`,
-            height: '20px',
-            background: 'white',
-            border: '1px solid black',
-          }}
-        />
-      );
+      // Update current process and start time
+      currentProcess = s.pid;
+      currentStartTime = s.startTime;
     }
-    return timeline;
-  };
+    previousEndTime = s.endTime;
+  });
+
+  // Render the last process block
+  if (currentProcess !== null) {
+    timeline.push(
+      <div
+        key={`${currentProcess}-${currentStartTime}`}
+        style={{
+          width: `${((totalDuration - currentStartTime) / totalDuration) * 100}%`,
+          height: '20px',
+          background: processColors[currentProcess],
+          border: '1px solid black',
+          textAlign: 'center',
+          position: 'relative',
+        }}
+      >
+        {currentProcess}
+      </div>
+    );
+  }
+
+  return timeline;
+};
+
 
   return (
     <div>
